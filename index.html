@@ -3,184 +3,968 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jadwal Sholat & Kiblat</title>
+    <title>Struk Pom - Receipt Generator</title>
     <style>
-        /* [Previous CSS styles remain exactly the same] */
+        :root {
+            --primary-color: #0066cc;
+            --secondary-color: #f0f0f0;
+            --text-color: #333;
+            --bg-color: #fff;
+            --receipt-bg: #fff;
+            --receipt-border: #ddd;
+            --item-bg: #f9f9f9;
+            --button-bg: #0066cc;
+            --button-text: #fff;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+        }
+
+        .dark-mode {
+            --primary-color: #4da6ff;
+            --secondary-color: #2d2d2d;
+            --text-color: #f0f0f0;
+            --bg-color: #1a1a1a;
+            --receipt-bg: #2d2d2d;
+            --receipt-border: #444;
+            --item-bg: #333;
+            --button-bg: #4da6ff;
+            --button-text: #fff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            max-width: 100%;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+
+        .btn-success {
+            background-color: var(--success-color);
+        }
+
+        .btn-icon {
+            font-size: 1.2rem;
+        }
+
+        .receipt {
+            background-color: var(--receipt-bg);
+            border: 1px solid var(--receipt-border);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-container {
+            margin-bottom: 15px;
+        }
+
+        .logo-preview {
+            max-width: 150px;
+            max-height: 100px;
+            display: block;
+            margin: 0 auto 10px;
+        }
+
+        .receipt-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+            border-bottom: 2px dashed var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        .gas-station-name {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+
+        .receipt-date {
+            text-align: center;
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .items-list {
+            margin-bottom: 20px;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: var(--item-bg);
+            border-radius: 5px;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+
+        .item-info {
+            flex: 1;
+        }
+
+        .item-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .item-details {
+            display: flex;
+            gap: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 5px;
+        }
+
+        .action-btn.delete {
+            color: var(--danger-color);
+        }
+
+        .total-section {
+            border-top: 2px dashed var(--primary-color);
+            padding-top: 15px;
+            margin-top: 15px;
+            font-weight: bold;
+            text-align: right;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--bg-color);
+            padding: 20px;
+            border-radius: 10px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .modal-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-color);
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .receipt, .receipt * {
+                visibility: visible;
+            }
+            .receipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                max-width: 100%;
+                box-shadow: none;
+                border: none;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        /* Toggle switch */
+        .theme-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+
+        .theme-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--primary-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--success-color);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1001;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
     </style>
 </head>
 <body>
-    <!-- [Previous HTML structure remains exactly the same] -->
+    <div class="container">
+        <h1 class="no-print">Struk Pom</h1>
+        
+        <div class="controls no-print">
+            <div>
+                <button id="addItemBtn" class="btn">
+                    <span class="btn-icon">+</span> Tambah Item
+                </button>
+                <button id="addNoteBtn" class="btn">
+                    <span class="btn-icon">+</span> Catatan
+                </button>
+            </div>
+            <div>
+                <label class="theme-switch">
+                    <input type="checkbox" id="themeToggle">
+                    <span class="slider"></span>
+                </label>
+                <button id="saveBtn" class="btn btn-success">
+                    <span class="btn-icon">🖨️</span> Cetak
+                </button>
+            </div>
+        </div>
+
+        <div class="receipt" id="receipt">
+            <div class="receipt-header">
+                <div class="logo-container no-print">
+                    <img id="logoPreview" class="logo-preview" style="display: none;">
+                    <input type="file" id="logoUpload" accept="image/*" class="hidden">
+                    <button id="uploadLogoBtn" class="btn" style="width: 100%;">
+                        <span class="btn-icon">🖼️</span> Upload Logo
+                    </button>
+                </div>
+                <input type="text" id="receiptTitleInput" class="receipt-title no-print" value="STRUK PEMBELIAN BAHAN BAKAR" style="width: 100%; text-align: center; border: none; background: transparent;">
+                <div class="gas-station-name">
+                    <input type="text" id="stationNameInput" class="no-print" value="POM BENSIN MAKMUR" style="width: 100%; text-align: center; border: none; background: transparent; font-size: 1.2rem;">
+                </div>
+                <div class="receipt-date" id="receiptDate">Senin, 01 Januari 2024 12:00:00</div>
+            </div>
+
+            <div class="items-list" id="itemsList">
+                <!-- Items will be added here dynamically -->
+                <div class="item">
+                    <div class="item-info">
+                        <div class="item-name">Pertamax</div>
+                        <div class="item-details">
+                            <span>10 Liter</span>
+                            <span>@ Rp 12.500</span>
+                        </div>
+                    </div>
+                    <div class="item-amount">Rp 125.000</div>
+                    <div class="item-actions no-print">
+                        <button class="action-btn edit">✏️</button>
+                        <button class="action-btn delete">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="notes-list" id="notesList">
+                <!-- Notes will be added here dynamically -->
+                <div class="item">
+                    <div class="item-info">
+                        <div class="item-name">Layanan Tambahan</div>
+                    </div>
+                    <div class="item-amount">Rp 10.000</div>
+                    <div class="item-actions no-print">
+                        <button class="action-btn edit">✏️</button>
+                        <button class="action-btn delete">🗑️</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="total-section">
+                <div>TOTAL: <span id="totalAmount">Rp 135.000</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Item Modal -->
+    <div class="modal" id="itemModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="itemModalTitle">Tambah Item Baru</div>
+                <button class="close-btn" id="closeItemModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="itemName">Nama Item</label>
+                    <input type="text" id="itemName" class="form-control" placeholder="Misal: Pertamax, Oli, dll">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="itemPrice">Harga</label>
+                        <input type="number" id="itemPrice" class="form-control" placeholder="Rp">
+                    </div>
+                    <div class="form-group">
+                        <label for="itemQty">Jumlah</label>
+                        <input type="number" id="itemQty" class="form-control" placeholder="Qty">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="itemUnit">Satuan (opsional)</label>
+                    <input type="text" id="itemUnit" class="form-control" placeholder="Misal: Liter, Pcs, dll">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelItemBtn">Batal</button>
+                <button class="btn btn-success" id="saveItemBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Note Modal -->
+    <div class="modal" id="noteModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title" id="noteModalTitle">Tambah Catatan</div>
+                <button class="close-btn" id="closeNoteModal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="noteName">Keterangan</label>
+                    <input type="text" id="noteName" class="form-control" placeholder="Misal: Layanan, Biaya Parkir, dll">
+                </div>
+                <div class="form-group">
+                    <label for="noteAmount">Jumlah</label>
+                    <input type="number" id="noteAmount" class="form-control" placeholder="Rp">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn" id="cancelNoteBtn">Batal</button>
+                <button class="btn btn-success" id="saveNoteBtn">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
 
     <script>
-        // App state
-        let currentPage = 'home';
-        let currentLocation = null;
-        let currentQiblaDirection = null;
-        let watchId = null;
-        let currentHeading = 0;
-        
-        // [Previous DOM elements and init() function remain the same until the compass functions]
+        // DOM Elements
+        const receiptTitleInput = document.getElementById('receiptTitleInput');
+        const stationNameInput = document.getElementById('stationNameInput');
+        const receiptDate = document.getElementById('receiptDate');
+        const itemsList = document.getElementById('itemsList');
+        const notesList = document.getElementById('notesList');
+        const totalAmount = document.getElementById('totalAmount');
+        const logoUpload = document.getElementById('logoUpload');
+        const uploadLogoBtn = document.getElementById('uploadLogoBtn');
+        const logoPreview = document.getElementById('logoPreview');
+        const addItemBtn = document.getElementById('addItemBtn');
+        const addNoteBtn = document.getElementById('addNoteBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const themeToggle = document.getElementById('themeToggle');
+        const toast = document.getElementById('toast');
 
-        // Initialize compass
-        function initCompass() {
-            stopCompass();
-            
-            // Create compass markers
-            compassMarkers.innerHTML = '';
-            for (let i = 0; i < 360; i += 15) {
-                const marker = document.createElement('div');
-                marker.className = 'compass-marker';
-                marker.style.transform = `rotate(${i}deg) translateY(-90px)`;
-                
-                // Add cardinal directions
-                if (i % 90 === 0) {
-                    const label = document.createElement('div');
-                    label.className = 'compass-label';
-                    label.style.transform = `rotate(${-i}deg) translateY(-70px)`;
-                    
-                    let direction;
-                    if (i === 0) direction = 'N';
-                    else if (i === 90) direction = 'E';
-                    else if (i === 180) direction = 'S';
-                    else if (i === 270) direction = 'W';
-                    
-                    label.textContent = direction;
-                    label.classList.add('compass-north');
-                    compassMarkers.appendChild(label);
-                }
-                
-                compassMarkers.appendChild(marker);
-            }
-            
-            // Request device orientation permission
-            if (window.DeviceOrientationEvent) {
-                if (typeof DeviceOrientationEvent.requestPermission === 'function') {
-                    // iOS 13+ requires permission
-                    DeviceOrientationEvent.requestPermission()
-                        .then(response => {
-                            if (response === 'granted') {
-                                startCompass();
-                            } else {
-                                console.log('Device orientation permission denied');
-                                showMessage('Izinkan akses orientasi perangkat untuk kompas yang akurat');
-                            }
-                        })
-                        .catch(console.error);
-                } else {
-                    // Other browsers
-                    startCompass();
-                }
-            } else {
-                console.log('Device orientation not supported');
-                showMessage('Browser tidak mendukung kompas. Gunakan perangkat lain.');
-            }
-        }
-        
-        // Start compass tracking
-        function startCompass() {
-            // Get current location first
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    position => {
-                        currentLocation = {
-                            latitude: position.coords.latitude,
-                            longitude: position.coords.longitude
-                        };
-                        
-                        // Calculate Qibla direction
-                        calculateQiblaDirection();
-                        
-                        // Start watching device orientation
-                        window.addEventListener('deviceorientation', handleOrientation, true);
-                    },
-                    error => {
-                        console.error('Geolocation error:', error);
-                        showMessage('Izinkan akses lokasi untuk arah kiblat yang akurat');
-                    },
-                    { enableHighAccuracy: true, timeout: 10000 }
-                );
-            } else {
-                console.log('Geolocation not supported');
-                showMessage('Browser tidak mendukung geolokasi');
-            }
-        }
-        
-        // Stop compass tracking
-        function stopCompass() {
-            window.removeEventListener('deviceorientation', handleOrientation, true);
-        }
-        
-        // Calculate Qibla direction (angle from North to Ka'bah)
-        function calculateQiblaDirection() {
-            if (!currentLocation) return;
-            
-            // Ka'bah coordinates
-            const kaabaLat = 21.422487;
-            const kaabaLong = 39.826206;
-            
-            // Convert degrees to radians
-            const phi1 = currentLocation.latitude * Math.PI / 180;
-            const phi2 = kaabaLat * Math.PI / 180;
-            const lambda1 = currentLocation.longitude * Math.PI / 180;
-            const lambda2 = kaabaLong * Math.PI / 180;
-            
-            // Calculate Qibla direction using spherical trigonometry
-            const y = Math.sin(lambda2 - lambda1);
-            const x = Math.cos(phi1) * Math.tan(phi2) - Math.sin(phi1) * Math.cos(lambda2 - lambda1);
-            let qiblaDirection = Math.atan2(y, x) * 180 / Math.PI;
-            
-            // Normalize to 0-360
-            currentQiblaDirection = (qiblaDirection + 360) % 360;
-            
-            console.log(`Qibla direction calculated: ${currentQiblaDirection}°`);
-            
-            // Initial arrow position
-            updateQiblaArrow(currentHeading);
-        }
-        
-        // Handle device orientation changes
-        function handleOrientation(event) {
-            if (event.absolute && event.alpha !== null) {
-                // alpha: rotation around z-axis (0-360)
-                currentHeading = event.alpha;
-                
-                // iOS sometimes returns values > 360
-                currentHeading = currentHeading % 360;
-                
-                // Update compass display
-                updateQiblaArrow(currentHeading);
-            }
-        }
-        
-        // Update Qibla arrow position
-        function updateQiblaArrow(heading) {
-            if (currentQiblaDirection === null) return;
-            
-            // Calculate the angle between device heading and Qibla direction
-            // The arrow should point to (qiblaDirection - heading)
-            const angle = (currentQiblaDirection - heading + 360) % 360;
-            
-            // Rotate the arrow to point to Qibla direction
-            qiblaArrow.style.transform = `rotate(${angle}deg) translateX(5px)`;
-            
-            // Update or create Qibla label
-            let qiblaLabel = document.querySelector('.compass-qibla');
-            if (!qiblaLabel) {
-                qiblaLabel = document.createElement('div');
-                qiblaLabel.className = 'compass-label compass-qibla';
-                compassMarkers.appendChild(qiblaLabel);
-            }
-            
-            // Position the label opposite to the arrow (180° difference)
-            const labelAngle = (angle + 180) % 360;
-            qiblaLabel.style.transform = `rotate(${-labelAngle}deg) translateY(-50px) rotate(${labelAngle}deg)`;
-            qiblaLabel.textContent = `Kiblat ${Math.round(currentQiblaDirection)}°`;
-            
-            // Debug information
-            console.log(`Device heading: ${Math.round(heading)}°, Qibla arrow: ${Math.round(angle)}°`);
+        // Modal Elements
+        const itemModal = document.getElementById('itemModal');
+        const noteModal = document.getElementById('noteModal');
+        const closeItemModal = document.getElementById('closeItemModal');
+        const closeNoteModal = document.getElementById('closeNoteModal');
+        const cancelItemBtn = document.getElementById('cancelItemBtn');
+        const cancelNoteBtn = document.getElementById('cancelNoteBtn');
+        const saveItemBtn = document.getElementById('saveItemBtn');
+        const saveNoteBtn = document.getElementById('saveNoteBtn');
+        const itemModalTitle = document.getElementById('itemModalTitle');
+        const noteModalTitle = document.getElementById('noteModalTitle');
+
+        // Form Elements
+        const itemName = document.getElementById('itemName');
+        const itemPrice = document.getElementById('itemPrice');
+        const itemQty = document.getElementById('itemQty');
+        const itemUnit = document.getElementById('itemUnit');
+        const noteName = document.getElementById('noteName');
+        const noteAmount = document.getElementById('noteAmount');
+
+        // State
+        let items = [];
+        let notes = [];
+        let editingItemId = null;
+        let editingNoteId = null;
+
+        // Initialize the app
+        function init() {
+            updateDateTime();
+            setInterval(updateDateTime, 1000);
+            loadFromLocalStorage();
+            calculateTotal();
+            setupEventListeners();
         }
 
-        // [Rest of the code remains the same]
+        // Set up event listeners
+        function setupEventListeners() {
+            // Logo upload
+            uploadLogoBtn.addEventListener('click', () => logoUpload.click());
+            logoUpload.addEventListener('change', handleLogoUpload);
+
+            // Title and station name changes
+            receiptTitleInput.addEventListener('input', saveToLocalStorage);
+            stationNameInput.addEventListener('input', saveToLocalStorage);
+
+            // Buttons
+            addItemBtn.addEventListener('click', openItemModal);
+            addNoteBtn.addEventListener('click', openNoteModal);
+            saveBtn.addEventListener('click', handleSave);
+
+            // Theme toggle
+            themeToggle.addEventListener('change', toggleTheme);
+
+            // Modal buttons
+            closeItemModal.addEventListener('click', closeItemModalFn);
+            closeNoteModal.addEventListener('click', closeNoteModalFn);
+            cancelItemBtn.addEventListener('click', closeItemModalFn);
+            cancelNoteBtn.addEventListener('click', closeNoteModalFn);
+            saveItemBtn.addEventListener('click', saveItem);
+            saveNoteBtn.addEventListener('click', saveNote);
+
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.checked = true;
+            }
+        }
+
+        // Update date and time
+        function updateDateTime() {
+            const now = new Date();
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            };
+            receiptDate.textContent = now.toLocaleDateString('id-ID', options);
+        }
+
+        // Handle logo upload
+        function handleLogoUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    logoPreview.src = event.target.result;
+                    logoPreview.style.display = 'block';
+                    saveToLocalStorage();
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Open item modal
+        function openItemModal(id = null) {
+            editingItemId = id;
+            
+            if (id !== null) {
+                // Editing existing item
+                const item = items.find(item => item.id === id);
+                if (item) {
+                    itemModalTitle.textContent = 'Edit Item';
+                    itemName.value = item.name;
+                    itemPrice.value = item.price;
+                    itemQty.value = item.quantity;
+                    itemUnit.value = item.unit || '';
+                }
+            } else {
+                // Adding new item
+                itemModalTitle.textContent = 'Tambah Item Baru';
+                itemName.value = '';
+                itemPrice.value = '';
+                itemQty.value = '1';
+                itemUnit.value = '';
+            }
+            
+            itemModal.style.display = 'flex';
+            itemName.focus();
+        }
+
+        // Open note modal
+        function openNoteModal(id = null) {
+            editingNoteId = id;
+            
+            if (id !== null) {
+                // Editing existing note
+                const note = notes.find(note => note.id === id);
+                if (note) {
+                    noteModalTitle.textContent = 'Edit Catatan';
+                    noteName.value = note.name;
+                    noteAmount.value = note.amount;
+                }
+            } else {
+                // Adding new note
+                noteModalTitle.textContent = 'Tambah Catatan';
+                noteName.value = '';
+                noteAmount.value = '';
+            }
+            
+            noteModal.style.display = 'flex';
+            noteName.focus();
+        }
+
+        // Close item modal
+        function closeItemModalFn() {
+            itemModal.style.display = 'none';
+        }
+
+        // Close note modal
+        function closeNoteModalFn() {
+            noteModal.style.display = 'none';
+        }
+
+        // Save item
+        function saveItem() {
+            const name = itemName.value.trim();
+            const price = parseFloat(itemPrice.value);
+            const quantity = parseFloat(itemQty.value);
+            const unit = itemUnit.value.trim();
+
+            if (!name || isNaN(price) {
+                showToast('Nama item dan harga harus diisi');
+                return;
+            }
+
+            const amount = price * (isNaN(quantity) ? 1 : quantity;
+
+            if (editingItemId !== null) {
+                // Update existing item
+                const index = items.findIndex(item => item.id === editingItemId);
+                if (index !== -1) {
+                    items[index] = {
+                        id: editingItemId,
+                        name,
+                        price,
+                        quantity: isNaN(quantity) ? 1 : quantity,
+                        unit,
+                        amount
+                    };
+                }
+            } else {
+                // Add new item
+                items.push({
+                    id: Date.now().toString(),
+                    name,
+                    price,
+                    quantity: isNaN(quantity) ? 1 : quantity,
+                    unit,
+                    amount
+                });
+            }
+
+            renderItems();
+            calculateTotal();
+            saveToLocalStorage();
+            closeItemModalFn();
+        }
+
+        // Save note
+        function saveNote() {
+            const name = noteName.value.trim();
+            const amount = parseFloat(noteAmount.value);
+
+            if (!name || isNaN(amount)) {
+                showToast('Keterangan dan jumlah harus diisi');
+                return;
+            }
+
+            if (editingNoteId !== null) {
+                // Update existing note
+                const index = notes.findIndex(note => note.id === editingNoteId);
+                if (index !== -1) {
+                    notes[index] = {
+                        id: editingNoteId,
+                        name,
+                        amount
+                    };
+                }
+            } else {
+                // Add new note
+                notes.push({
+                    id: Date.now().toString(),
+                    name,
+                    amount
+                });
+            }
+
+            renderNotes();
+            calculateTotal();
+            saveToLocalStorage();
+            closeNoteModalFn();
+        }
+
+        // Render items
+        function renderItems() {
+            itemsList.innerHTML = '';
+            
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'item';
+                itemElement.dataset.id = item.id;
+                
+                const quantityText = item.unit ? `${item.quantity} ${item.unit}` : item.quantity;
+                
+                itemElement.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${item.name}</div>
+                        <div class="item-details">
+                            <span>${quantityText}</span>
+                            <span>@ Rp ${formatNumber(item.price)}</span>
+                        </div>
+                    </div>
+                    <div class="item-amount">Rp ${formatNumber(item.amount)}</div>
+                    <div class="item-actions no-print">
+                        <button class="action-btn edit">✏️</button>
+                        <button class="action-btn delete">🗑️</button>
+                    </div>
+                `;
+                
+                itemsList.appendChild(itemElement);
+                
+                // Add event listeners to action buttons
+                const editBtn = itemElement.querySelector('.edit');
+                const deleteBtn = itemElement.querySelector('.delete');
+                
+                editBtn.addEventListener('click', () => openItemModal(item.id));
+                deleteBtn.addEventListener('click', () => deleteItem(item.id));
+            });
+        }
+
+        // Render notes
+        function renderNotes() {
+            notesList.innerHTML = '';
+            
+            if (notes.length === 0) return;
+            
+            notes.forEach(note => {
+                const noteElement = document.createElement('div');
+                noteElement.className = 'item';
+                noteElement.dataset.id = note.id;
+                
+                noteElement.innerHTML = `
+                    <div class="item-info">
+                        <div class="item-name">${note.name}</div>
+                    </div>
+                    <div class="item-amount">Rp ${formatNumber(note.amount)}</div>
+                    <div class="item-actions no-print">
+                        <button class="action-btn edit">✏️</button>
+                        <button class="action-btn delete">🗑️</button>
+                    </div>
+                `;
+                
+                notesList.appendChild(noteElement);
+                
+                // Add event listeners to action buttons
+                const editBtn = noteElement.querySelector('.edit');
+                const deleteBtn = noteElement.querySelector('.delete');
+                
+                editBtn.addEventListener('click', () => openNoteModal(note.id));
+                deleteBtn.addEventListener('click', () => deleteNote(note.id));
+            });
+        }
+
+        // Delete item
+        function deleteItem(id) {
+            items = items.filter(item => item.id !== id);
+            renderItems();
+            calculateTotal();
+            saveToLocalStorage();
+        }
+
+        // Delete note
+        function deleteNote(id) {
+            notes = notes.filter(note => note.id !== id);
+            renderNotes();
+            calculateTotal();
+            saveToLocalStorage();
+        }
+
+        // Calculate total amount
+        function calculateTotal() {
+            const itemsTotal = items.reduce((sum, item) => sum + item.amount, 0);
+            const notesTotal = notes.reduce((sum, note) => sum + note.amount, 0);
+            const total = itemsTotal + notesTotal;
+            
+            totalAmount.textContent = `Rp ${formatNumber(total)}`;
+        }
+
+        // Format number with thousand separators
+        function formatNumber(num) {
+            return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+        }
+
+        // Toggle theme
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            localStorage.setItem('theme', theme);
+        }
+
+        // Handle save/print
+        function handleSave() {
+            // First save current state
+            saveToLocalStorage();
+            
+            // Then print
+            window.print();
+        }
+
+        // Show toast notification
+        function showToast(message, duration = 3000) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, duration);
+        }
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            const data = {
+                title: receiptTitleInput.value,
+                stationName: stationNameInput.value,
+                items,
+                notes,
+                logo: logoPreview.style.display === 'block' ? logoPreview.src : null,
+                theme: document.body.classList.contains('dark-mode') ? 'dark' : 'light'
+            };
+            
+            localStorage.setItem('strukPomData', JSON.stringify(data));
+        }
+
+        // Load from localStorage
+        function loadFromLocalStorage() {
+            const savedData = localStorage.getItem('strukPomData');
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                
+                receiptTitleInput.value = data.title || 'STRUK PEMBELIAN BAHAN BAKAR';
+                stationNameInput.value = data.stationName || 'POM BENSIN MAKMUR';
+                items = data.items || [];
+                notes = data.notes || [];
+                
+                if (data.logo) {
+                    logoPreview.src = data.logo;
+                    logoPreview.style.display = 'block';
+                }
+                
+                if (data.theme === 'dark') {
+                    document.body.classList.add('dark-mode');
+                    themeToggle.checked = true;
+                }
+                
+                renderItems();
+                renderNotes();
+                calculateTotal();
+            } else {
+                // Add sample data if no saved data
+                items = [{
+                    id: '1',
+                    name: 'Pertamax',
+                    price: 12500,
+                    quantity: 10,
+                    unit: 'Liter',
+                    amount: 125000
+                }];
+                
+                notes = [{
+                    id: '1',
+                    name: 'Layanan Tambahan',
+                    amount: 10000
+                }];
+                
+                renderItems();
+                renderNotes();
+                calculateTotal();
+                saveToLocalStorage();
+            }
+        }
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', init);
     </script>
 </body>
 </html>
